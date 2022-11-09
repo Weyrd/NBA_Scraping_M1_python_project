@@ -1,16 +1,11 @@
-# NBA_Scraping_M1_python_project
-
-we need to grattage le site de la NBA
-
 If you want to code and try somes thing, you have two solutions :
 
 - create a new .py file in the same folder and use the .json in data
  you can import them with :
- ```py
 # open commonplayersinfo.json
 with open("data/commonplayersinfo.json", "r") as f:
     commonplayersinfo = json.load(f)
-```
+
 and then i will help you after to copy your code in project.py
 
 - try to code direcltly in project.py
