@@ -47,7 +47,7 @@ class API():
 
     # save data to json indented
     async def save_data(self, data, filename):
-        with open(filename, "w") as f:
+        with open("data/" + filename, "w") as f:
             json.dump(data, f, indent=4)
 
  
@@ -119,7 +119,7 @@ class Main():
         # example to get jersey number of player
 
         # open commonplayersinfo.json
-        with open("commonplayersinfo.json", "r") as f:
+        with open("data/commonplayersinfo.json", "r") as f:
             commonplayersinfo = json.load(f)
 
         # get jersey number
@@ -133,6 +133,7 @@ class Main():
         # Get all shooting data for 2022-23 season (https://www.nba.com/stats/players/shooting)
         print("This function can take a while to complete the first time...")
         shooting = await self.get_nba_data("shooting", {"Season": "2022-23"})
+
         print(f"shooting : Received data of {len(shooting['resultSets']['rowSet'])} players\n")
 
 
