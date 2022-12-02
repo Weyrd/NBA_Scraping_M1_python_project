@@ -1,5 +1,4 @@
 import asyncio
-import aiohttp
 import json
 import csv
 
@@ -34,6 +33,7 @@ class API():
         }
 
     async def start_session(self):
+        import aiohttp
         headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv: 106.0) Gecko/20100101 Firefox/106.0",
                 "Referer": "https://www.nba.com/",
@@ -134,29 +134,15 @@ class Main():
 
 
 
-
-
-
-    async def main(self):
-        await self.ddos_api()
-
-
-        #########################
-        #                       #
-        #     YOUR CODE HERE    #
-        #                       #
-        #########################
-
-
+    async def desicion_tree(self):
         # open playerdashboardbyyearoveryear.json
-        with open('/data/playerdashboardbyyearoveryear.json') as f:
+        with open('data/playerdashboardbyyearoveryear.json') as f:
             data = json.load(f)
         headers = data["infor"][0]["resultSets"][0]["headers"]
 
-
         headers[66] = "Winrate"
 
-        with open('/data/NbaData.csv', 'w') as f:
+        with open('data/NbaData.csv', 'w') as f:
             dw = csv.DictWriter(f, delimiter=',', fieldnames=headers)
             dw.writeheader()
 
@@ -172,16 +158,15 @@ class Main():
                 except Exception as e:
                     pass
 
-        file = pd.read_csv("/data/NbaData.csv")
-        print("Data shape: ", file.shape)
-
+        file = pd.read_csv("data/NbaData.csv")
+        #print("Data shape: ", file.shape)
 
         training = file.iloc[:, 9:-32].values
-        print("training : \n", training)
-        print("\n")
+        # print("training : \n", training)
+        # print("\n")
         targets = file.iloc[:, -1].values
 
-        print("targets : \n", targets)
+        # print("targets : \n", targets)
 
         model_tree = DecisionTreeClassifier()
         model_tree.fit(training, targets)
@@ -193,45 +178,25 @@ class Main():
             ft_names.pop(-1)
 
         text_representation = export_text(model_tree, feature_names=ft_names)
-        fig = plt.figure(figsize=(95, 30))
-        _ = plot_tree(model_tree, feature_names=ft_names, filled=True, fontsize=30)
-        
-        plt.savefig('/data/decision_tree.png')
-        #show 
+        fig = plt.figure(figsize=(100, 100))
+        _ = plot_tree(model_tree, feature_names=ft_names,
+                      filled=True, fontsize=30)
+
+
+        plt.savefig('data/decision_tree.png')
         plt.show()
 
 
+    async def plot_plots(self):
+        pass
 
 
 
+    async def main(self):
+        # await self.ddos_api()
 
-
-
-
-
-
-
-
-
-
-        """# open commonplayersinfo.json
-        with open("data/commonplayersinfo.json", "r") as f:
-            commonplayersinfo = json.load(f)
-
-        # get jersey number
-        jersey_numbers = []
-        for player in commonplayersinfo["all_common_players"]:
-            # you can check the structure of the json in the file commonplayersinfo.json (HEADER)
-            jersey_numbers.append(player["resultSets"][0]["rowSet"][0][14])
-        
-        #print(f"Jersey Numbers : {jersey_numbers}")
-
-
-        #########################
-        #                       #
-        #        END CODE       #
-        #                       #
-        #########################
+        await self.desicion_tree()
+        await self.plot_plots()
         
         
 
@@ -258,8 +223,7 @@ if __name__ == "__main__":
     api = API(loop)
     main = Main(api, loop)
     try:
-        main.loop.run_until_complete(main.run())
-    
+        main.loop.run_until_complete(main.run())    
     except Exception as e:
         print(f"Error Main : {'{}: {}'.format(type(e).__name__, e)}")
     finally:
