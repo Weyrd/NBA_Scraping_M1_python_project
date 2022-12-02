@@ -1,10 +1,18 @@
 import asyncio
 import aiohttp
 import json
+import csv
 
 import numpy as np
 import pandas as pd
 import seaborn as sns
+
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import export_text
+from sklearn.tree import plot_tree
+import matplotlib.pyplot as plt
+
+
 
 
 class API():
@@ -138,9 +146,75 @@ class Main():
         #     YOUR CODE HERE    #
         #                       #
         #########################
-        # example to get jersey number of player
 
-        # open commonplayersinfo.json
+
+        # open playerdashboardbyyearoveryear.json
+        with open('/data/playerdashboardbyyearoveryear.json') as f:
+            data = json.load(f)
+        headers = data["infor"][0]["resultSets"][0]["headers"]
+
+
+        headers[66] = "Winrate"
+
+        with open('/data/NbaData.csv', 'w') as f:
+            dw = csv.DictWriter(f, delimiter=',', fieldnames=headers)
+            dw.writeheader()
+
+            writer = csv.writer(f)
+            for elements in data["infor"]:
+                try:
+                    if elements["resultSets"][0]["rowSet"][0][8] >= 0.5:
+                        elements["resultSets"][0]["rowSet"][0][66] = 1
+                    else:
+                        elements["resultSets"][0]["rowSet"][0][66] = 0
+                    writer.writerow(elements["resultSets"][0]["rowSet"][0])
+
+                except Exception as e:
+                    pass
+
+        file = pd.read_csv("/data/NbaData.csv")
+        print("Data shape: ", file.shape)
+
+
+        training = file.iloc[:, 9:-32].values
+        print("training : \n", training)
+        print("\n")
+        targets = file.iloc[:, -1].values
+
+        print("targets : \n", targets)
+
+        model_tree = DecisionTreeClassifier()
+        model_tree.fit(training, targets)
+
+        ft_names = list(file.columns)
+        for i in range(9):
+            ft_names.pop(0)
+        for i in range(32):
+            ft_names.pop(-1)
+
+        text_representation = export_text(model_tree, feature_names=ft_names)
+        fig = plt.figure(figsize=(95, 30))
+        _ = plot_tree(model_tree, feature_names=ft_names, filled=True, fontsize=30)
+        
+        plt.savefig('/data/decision_tree.png')
+        #show 
+        plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        """# open commonplayersinfo.json
         with open("data/commonplayersinfo.json", "r") as f:
             commonplayersinfo = json.load(f)
 
