@@ -22,12 +22,13 @@ class API():
             "commonplayerinfo": {"url": "https://stats.nba.com/stats/commonplayerinfo", "params": {"LeagueID": "00", "PlayerID": ""}},
             # https://www.nba.com/stats/players/shooting
             "shooting": {"url": "https://stats.nba.com/stats/leaguedashplayershotlocations", "params": {"College": "", "Conference": "", "Country": "", "DateFrom": "", "DateTo": "", "DistanceRange": "5ft Range", "Division": "", "DraftPick": "", "DraftYear": "", "GameScope": "", "GameSegment": "", "Height": "", "LastNGames": "0", "Location": "", "MeasureType": "Base", "Month": "0", "OpponentTeamID": "0", "Outcome": "", "PORound": "0", "PaceAdjust": "N", "PerMode": "PerGame", "Period": "0", "PlayerExperience": "", "PlayerPosition": "", "PlusMinus": "N", "Rank": "N", "Season": "2022-23", "SeasonSegment": "", "SeasonType": "Regular Season", "ShotClockRange": "", "StarterBench": "", "TeamID": "0", "VsConference": "", "VsDivision": "", "Weight": ""}},
+            "playerdashboardbyyearoveryear" : {"url": "https://stats.nba.com/stats/playerdashboardbyyearoveryear", "params": {"PlayerID": "", "LastNGames": "0", "MeasureType": "Base", "Month": "0", "OpponentTeamID": "0", "PaceAdjust": "N", "PerMode": "PerGame", "Period": "0", "PlusMinus": "N", "Rank": "N", "Season": "2022-23", "SeasonType": "Regular Season", "DateFrom": "", "DateTo": "", "GameSegment": "", "LeagueID": "00", "Location": "", "Outcome": "", "PORound": "0", "SeasonSegment": "", "ShotClockRange": "", "VsConference": "", "VsDivision": ""}},
         }
 
     async def start_session(self):
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv: 106.0) Gecko/20100101 Firefox/106.0",
-            "Referer": "https://www.nba.com/",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv: 106.0) Gecko/20100101 Firefox/106.0",
+                "Referer": "https://www.nba.com/",
         }
         self.session = aiohttp.ClientSession(headers=headers)
 
@@ -86,29 +87,50 @@ class Main():
         self.loop.close()
 
     async def ddos_api(self):
-        data = await self.get_nba_data("playersIndex")
-        print(f"playersIndex : Received {len(data['resultSets'][0]['rowSet'])} players\n")
+         data = await self.get_nba_data("playersIndex")
+         print(f"playersIndex : Received {len(data['resultSets'][0]['rowSet'])} players\n")
 
-        # get all person id if 2022-23 season in TO_YEAR
-        person_ids = [player[0] for player in data['resultSets'][0]['rowSet'] if int(
-            player[24]) == 2022 or int(player[25]) == 2022]
-        print(f"playersIndex : Received {len(person_ids)} players for 2022-23 season\n")
+         # get all person id if 2022-23 season in TO_YEAR
+         person_ids = [player[0] for player in data['resultSets'][0]['rowSet'] if int(
+             player[24]) == 2022 or int(player[25]) == 2022]
+         print(f"playersIndex : Received {len(person_ids)} players for 2022-23 season\n")
 
-        # get 10 first players
-        commonplayersinfo = []
-        for id in range(10):
-            commonplayerinfo = await self.get_nba_data("commonplayerinfo", {"PlayerID": person_ids[id]})
-            commonplayersinfo.append(commonplayerinfo)
+        # # get 10 first players
+        # commonplayersinfo = []
+        # for id in range(len(person_ids)):
 
-        print(f"commonplayerinfo : Received {len(commonplayersinfo)} players\n")
+        #     commonplayerinfo = await self.get_nba_data("commonplayerinfo", {"PlayerID": person_ids[id]})
+        #     commonplayersinfo.append(commonplayerinfo)
+        #     #sleep
+        #     await asyncio.sleep(3)
+
+        # print(f"commonplayerinfo : Received {len(commonplayersinfo)} players\n")
+
+        # # save to json
+        # await self.api.save_data(commonplayersinfo, "commonplayersinfo.json")
+
+        # # get 10 first players
+         i = 0
+         playerdashboardbyyearoveryear = []
+         for id in range(len(person_ids)):
+            print(i)
+            i += 1
+            playerdashboardbyyearoveryear.append(await self.get_nba_data("playerdashboardbyyearoveryear", {"PlayerID": person_ids[id]}))
+            #sleep
+            await asyncio.sleep(2)
+        
+         print(f"playerdashboardbyyearoveryear : Received {len(playerdashboardbyyearoveryear)} players\n")
 
         # save to json
-        # await self.api.save_data(commonplayersinfo, "commonplayersinfo.json")
+         await self.api.save_data(playerdashboardbyyearoveryear, "playerdashboardbyyearoveryear.json")
+
+
+
 
 
 
     async def main(self):
-        # await self.ddos_api()
+        await self.ddos_api()
 
 
         #########################
@@ -128,13 +150,7 @@ class Main():
             # you can check the structure of the json in the file commonplayersinfo.json (HEADER)
             jersey_numbers.append(player["resultSets"][0]["rowSet"][0][14])
         
-        print(f"Jersey Numbers : {jersey_numbers}")
-
-        # Get all shooting data for 2022-23 season (https://www.nba.com/stats/players/shooting)
-        print("This function can take a while to complete the first time...")
-        shooting = await self.get_nba_data("shooting", {"Season": "2022-23"})
-
-        print(f"shooting : Received data of {len(shooting['resultSets']['rowSet'])} players\n")
+        #print(f"Jersey Numbers : {jersey_numbers}")
 
 
         #########################
